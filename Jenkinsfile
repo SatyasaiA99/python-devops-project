@@ -124,7 +124,8 @@ pipeline {
                 '''
             }
         }
-    }       
+    }
+}
 
     post {
         success {
