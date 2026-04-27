@@ -7,15 +7,13 @@ pipeline {
         IMAGE_TAG = "v1"
 
         SONARQUBE_ENV = "sq"
-        NEXUS_URL = "http://YOUR_NEXUS_IP:8081"
+
+        NEXUS_URL = "http://13.206.85.161:8081"
         NEXUS_REPO = "python-repo"
-        NEXUS_USER = "admin"
-        NEXUS_PASS = "admin123"
     }
 
     stages {
 
-        /* ---------------- CHECKOUT ---------------- */
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -23,7 +21,6 @@ pipeline {
             }
         }
 
-        /* ---------------- INSTALL DEPENDENCIES ---------------- */
         stage('Install Dependencies') {
             steps {
                 sh '''
@@ -33,7 +30,6 @@ pipeline {
             }
         }
 
-        /* ---------------- SONARQUBE ANALYSIS ---------------- */
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
@@ -48,7 +44,6 @@ pipeline {
             }
         }
 
-        /* ---------------- QUALITY GATE ---------------- */
         stage('Quality Gate') {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
@@ -57,14 +52,30 @@ pipeline {
             }
         }
 
-        /* ---------------- BUILD DOCKER IMAGE ---------------- */
+        stage('Package App') {
+            steps {
+                sh '''
+                zip -r app.zip .
+                '''
+            }
+        }
+
+        stage('Upload to Nexus') {
+            steps {
+                sh '''
+                curl -u admin:admin123 \
+                --upload-file app.zip \
+                ${NEXUS_URL}/repository/${NEXUS_REPO}/app-v1.zip
+                '''
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
-        /* ---------------- PUSH TO DOCKER HUB ---------------- */
         stage('Push to DockerHub') {
             steps {
                 withCredentials([usernamePassword(
@@ -73,29 +84,14 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
 
-                    sh """
+                    sh '''
                     echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                     docker push ${IMAGE_NAME}:${IMAGE_TAG}
-                    """
+                    '''
                 }
             }
         }
-        /* ---------------- UPLOAD TO NEXUS ---------------- */
-        stage('Upload to Nexus') {
-            steps {
-                sh """
-                echo "Uploading artifact to Nexus..."
 
-                zip -r app.zip .
-
-                curl -u ${NEXUS_USER}:${NEXUS_PASS} \
-                --upload-file app.zip \
-                ${NEXUS_URL}/repository/${NEXUS_REPO}/app-${IMAGE_TAG}.zip
-                """
-            }
-        }
-
-        /* ---------------- RUN CONTAINER ---------------- */
         stage('Run Container') {
             steps {
                 sh '''
@@ -106,7 +102,6 @@ pipeline {
             }
         }
 
-        /* ---------------- VERIFY ---------------- */
         stage('Verify') {
             steps {
                 sh '''
