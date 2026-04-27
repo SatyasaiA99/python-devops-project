@@ -14,6 +14,7 @@ pipeline {
 
     stages {
 
+        /* ---------------- CHECKOUT ---------------- */
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -21,6 +22,7 @@ pipeline {
             }
         }
 
+        /* ---------------- INSTALL DEPENDENCIES ---------------- */
         stage('Install Dependencies') {
             steps {
                 sh '''
@@ -30,6 +32,7 @@ pipeline {
             }
         }
 
+        /* ---------------- SONARQUBE ---------------- */
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
@@ -44,6 +47,7 @@ pipeline {
             }
         }
 
+        /* ---------------- QUALITY GATE ---------------- */
         stage('Quality Gate') {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
@@ -52,12 +56,14 @@ pipeline {
             }
         }
 
+        /* ---------------- PACKAGE APP ---------------- */
         stage('Package App') {
             steps {
                 sh 'zip -r app.zip .'
             }
         }
 
+        /* ---------------- NEXUS UPLOAD ---------------- */
         stage('Upload to Nexus') {
             steps {
                 sh """
@@ -68,12 +74,16 @@ pipeline {
             }
         }
 
+        /* ---------------- DOCKER BUILD ---------------- */
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                sh """
+                docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                """
             }
         }
 
+        /* ---------------- DOCKER PUSH ---------------- */
         stage('Push to DockerHub') {
             steps {
                 withCredentials([usernamePassword(
@@ -82,14 +92,15 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
 
-                    sh '''
+                    sh """
                     echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                     docker push ${IMAGE_NAME}:${IMAGE_TAG}
-                    '''
+                    """
                 }
             }
         }
 
+        /* ---------------- RUN CONTAINER ---------------- */
         stage('Run Container') {
             steps {
                 sh '''
@@ -100,6 +111,7 @@ pipeline {
             }
         }
 
+        /* ---------------- VERIFY ---------------- */
         stage('Verify') {
             steps {
                 sh '''
@@ -109,6 +121,7 @@ pipeline {
             }
         }
 
+        /* ---------------- KUBERNETES DEPLOY ---------------- */
         stage('Deploy to Kubernetes') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
