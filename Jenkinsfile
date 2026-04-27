@@ -54,19 +54,17 @@ pipeline {
 
         stage('Package App') {
             steps {
-                sh '''
-                zip -r app.zip .
-                '''
+                sh 'zip -r app.zip .'
             }
         }
 
         stage('Upload to Nexus') {
             steps {
-                sh '''
+                sh """
                 curl -u admin:admin123 \
                 --upload-file app.zip \
                 ${NEXUS_URL}/repository/${NEXUS_REPO}/app-v1.zip
-                '''
+                """
             }
         }
 
@@ -110,22 +108,22 @@ pipeline {
                 '''
             }
         }
-    }
-    stage('Deploy to Kubernetes') {
+
+        stage('Deploy to Kubernetes') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-                sh '''
-                echo "🚀 Deploying to Kubernetes..."
+                    sh '''
+                    echo "🚀 Deploying to Kubernetes..."
 
-                kubectl apply -f Deployment.yml
-                kubectl apply -f Service.yml
+                    kubectl apply -f Deployment.yml
+                    kubectl apply -f Service.yml
 
-                kubectl rollout status deployment/python-app-deployment
-                '''
+                    kubectl rollout status deployment/python-app-deployment
+                    '''
+                }
             }
         }
     }
-}
 
     post {
         success {
