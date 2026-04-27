@@ -4,14 +4,16 @@
     <title>Cart</title>
 </head>
 <body>
-    <h1>🛍️ Your Cart</h1>
 
-    {% for item in cart %}
-        <p>{{ item.name }} - ₹{{ item.price }}</p>
-    {% endfor %}
+<h2>🛍️ Your Cart</h2>
 
-    <h3>Total: ₹{{ total }}</h3>
+{% for item in cart %}
+    <p>{{ item.name }} - ₹{{ item.price }}</p>
+{% endfor %}
 
-    <a href="/">Back to Shop</a>
+<h3>Total: ₹{{ total }}</h3>
+
+<a href="/">Back to Shop</a>
+
 </body>
 </html>
