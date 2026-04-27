@@ -35,13 +35,15 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh '''
-                    sonar-sonar \
-                    -Dsonar.projectKey=python-devops \
-                    -Dsonar.sources=. \
-                    -Dsonar.host.url=http://YOUR_SONARQUBE_IP:9000 \
-                    -Dsonar.login=YOUR_SONAR_TOKEN
-                    '''
+                    sh 'mvn sonar:sonar'
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
