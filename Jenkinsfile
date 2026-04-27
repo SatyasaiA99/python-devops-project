@@ -7,13 +7,10 @@ pipeline {
         IMAGE_TAG = "v1"
 
         SONARQUBE_ENV = "sq"
-
-        DOCKERHUB_USER = "satyasaia99"
     }
 
     stages {
 
-        /* ---------------- CHECKOUT ---------------- */
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -21,7 +18,6 @@ pipeline {
             }
         }
 
-        /* ---------------- PYTHON INSTALL ---------------- */
         stage('Install Dependencies') {
             steps {
                 sh '''
@@ -35,11 +31,18 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh 'mvn sonar:sonar'
+                    sh '''
+                    sonar-scanner \
+                    -Dsonar.projectKey=python-devops \
+                    -Dsonar.sources=. \
+                    -Dsonar.host.url=http://YOUR_SONARQUBE_IP:9000 \
+                    -Dsonar.login=YOUR_SONAR_TOKEN
+                    '''
                 }
             }
         }
 
+        /* ---------------- ONLY ONE QUALITY GATE ---------------- */
         stage('Quality Gate') {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
@@ -48,25 +51,12 @@ pipeline {
             }
         }
 
-        /* ---------------- QUALITY GATE ---------------- */
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
-
-        /* ---------------- DOCKER BUILD ---------------- */
         stage('Build Docker Image') {
             steps {
-                sh """
-                docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                """
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
-        /* ---------------- PUSH TO DOCKER HUB ---------------- */
         stage('Push to DockerHub') {
             steps {
                 withCredentials([usernamePassword(
@@ -83,7 +73,6 @@ pipeline {
             }
         }
 
-        /* ---------------- RUN CONTAINER ---------------- */
         stage('Run Container') {
             steps {
                 sh '''
@@ -94,7 +83,6 @@ pipeline {
             }
         }
 
-        /* ---------------- VERIFY ---------------- */
         stage('Verify') {
             steps {
                 sh '''
@@ -107,10 +95,10 @@ pipeline {
 
     post {
         success {
-            echo "🚀 Python Pipeline Success"
+            echo "🚀 Pipeline Success"
         }
         failure {
-            echo "❌ Python Pipeline Failed"
+            echo "❌ Pipeline Failed"
         }
     }
 }
