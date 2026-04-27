@@ -1,19 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Shop</title>
+    <title>My Shop</title>
+    <style>
+        body { font-family: Arial; background: #f1f3f6; }
+        .header { background: #2874f0; color: white; padding: 15px; }
+        .container { display: flex; flex-wrap: wrap; }
+
+        .card {
+            background: white;
+            width: 200px;
+            margin: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 0 5px gray;
+        }
+
+        img { width: 150px; height: 150px; }
+
+        a {
+            display: block;
+            background: green;
+            color: white;
+            padding: 5px;
+            text-decoration: none;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>🛒 My Shop</h1>
 
+<div class="header">
+    <h2>🛒 Flipkart Clone</h2>
+</div>
+
+<div class="container">
     {% for p in products %}
-        <div style="border:1px solid black; margin:10px; padding:10px;">
-            <h3>{{ p.name }}</h3>
-            <p>Price: ₹{{ p.price }}</p>
-            <a href="/add/{{ p.id }}">Add to Cart</a>
-        </div>
+    <div class="card">
+        <img src="{{ p.img }}">
+        <h3>{{ p.name }}</h3>
+        <p>₹{{ p.price }}</p>
+        <a href="/add/{{ p.id }}">Add to Cart</a>
+    </div>
     {% endfor %}
+</div>
 
-    <a href="/cart">Go to Cart</a>
+<a href="/cart">Go to Cart</a>
+
 </body>
 </html>
