@@ -1,12 +1,14 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, redirect
 
 app = Flask(__name__)
 
-# Sample products
 products = [
-    {"id": 1, "name": "Laptop", "price": 50000},
-    {"id": 2, "name": "Phone", "price": 20000},
-    {"id": 3, "name": "Headphones", "price": 2000}
+    {"id": 1, "name": "Laptop", "price": 50000, "img": "https://via.placeholder.com/150"},
+    {"id": 2, "name": "Phone", "price": 20000, "img": "https://via.placeholder.com/150"},
+    {"id": 3, "name": "Headphones", "price": 2000, "img": "https://via.placeholder.com/150"},
+    {"id": 4, "name": "Smart Watch", "price": 5000, "img": "https://via.placeholder.com/150"},
+    {"id": 5, "name": "Camera", "price": 30000, "img": "https://via.placeholder.com/150"},
+    {"id": 6, "name": "Shoes", "price": 3000, "img": "https://via.placeholder.com/150"}
 ]
 
 cart = []
@@ -23,9 +25,8 @@ def add_to_cart(id):
     return redirect("/cart")
 
 @app.route("/cart")
-def view_cart():
+def cart_view():
     total = sum(item["price"] for item in cart)
     return render_template("cart.html", cart=cart, total=total)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+app.run(host="0.0.0.0", port=5000)
