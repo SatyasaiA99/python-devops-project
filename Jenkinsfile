@@ -23,7 +23,6 @@ pipeline {
             }
         }
 
-        # ---------------- SONARQUBE ANALYSIS ----------------
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_SERVER}") {
@@ -46,7 +45,6 @@ pipeline {
             }
         }
 
-        # ---------------- DOCKER BUILD ----------------
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
@@ -68,7 +66,6 @@ pipeline {
             }
         }
 
-        # ---------------- NEXUS PUSH ----------------
         stage('Push Image to Nexus') {
             steps {
                 sh """
@@ -79,7 +76,6 @@ pipeline {
             }
         }
 
-        # ---------------- VERIFY ----------------
         stage('Verify') {
             steps {
                 sh """
