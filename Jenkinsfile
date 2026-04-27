@@ -11,6 +11,7 @@ pipeline {
 
     stages {
 
+        /* ---------------- CHECKOUT ---------------- */
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -18,6 +19,7 @@ pipeline {
             }
         }
 
+        /* ---------------- INSTALL DEPENDENCIES ---------------- */
         stage('Install Dependencies') {
             steps {
                 sh '''
@@ -27,22 +29,22 @@ pipeline {
             }
         }
 
-        /* ---------------- SONARQUBE ---------------- */
+        /* ---------------- SONARQUBE ANALYSIS ---------------- */
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
                     sh '''
-                    sonar-scanner \
+                    /opt/sonar-scanner/bin/sonar-scanner \
                     -Dsonar.projectKey=python-devops \
                     -Dsonar.sources=. \
-                    -Dsonar.host.url=http://YOUR_SONARQUBE_IP:9000 \
-                    -Dsonar.login=YOUR_SONAR_TOKEN
+                    -Dsonar.host.url=$SONAR_HOST_URL \
+                    -Dsonar.login=$SONAR_AUTH_TOKEN
                     '''
                 }
             }
         }
 
-        /* ---------------- ONLY ONE QUALITY GATE ---------------- */
+        /* ---------------- QUALITY GATE ---------------- */
         stage('Quality Gate') {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
@@ -51,12 +53,14 @@ pipeline {
             }
         }
 
+        /* ---------------- BUILD DOCKER IMAGE ---------------- */
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
+        /* ---------------- PUSH TO DOCKER HUB ---------------- */
         stage('Push to DockerHub') {
             steps {
                 withCredentials([usernamePassword(
@@ -73,16 +77,18 @@ pipeline {
             }
         }
 
+        /* ---------------- RUN CONTAINER ---------------- */
         stage('Run Container') {
             steps {
                 sh '''
                 docker stop python-app || true
                 docker rm python-app || true
-                docker run -d -p 5000:5000 --name python-app python-devops-app:v1
+                docker run -d -p 5000:5000 --name python-app ${IMAGE_NAME}:${IMAGE_TAG}
                 '''
             }
         }
 
+        /* ---------------- VERIFY ---------------- */
         stage('Verify') {
             steps {
                 sh '''
