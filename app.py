@@ -3,16 +3,16 @@ from flask import Flask, render_template, redirect
 app = Flask(__name__)
 
 products = [
-    {"id": 1, "name": "Laptop", "price": 50000, "img": "https://picsum.photos/200?1"},
-    {"id": 2, "name": "Phone", "price": 20000, "img": "https://picsum.photos/200?2"},
-    {"id": 3, "name": "Headphones", "price": 2000, "img": "https://picsum.photos/200?3"},
-    {"id": 4, "name": "Smart Watch", "price": 5000, "img": "https://picsum.photos/200?4"},
-    {"id": 5, "name": "Camera", "price": 30000, "img": "https://picsum.photos/200?5"},
-    {"id": 6, "name": "Shoes", "price": 3000, "img": "https://picsum.photos/200?6"},
-    {"id": 7, "name": "Backpack", "price": 1500, "img": "https://picsum.photos/200?7"},
-    {"id": 8, "name": "Keyboard", "price": 2500, "img": "https://picsum.photos/200?8"},
-    {"id": 9, "name": "Mouse", "price": 800, "img": "https://picsum.photos/200?9"},
-    {"id": 10, "name": "Speaker", "price": 4000, "img": "https://picsum.photos/200?10"}
+    {"id": 1, "name": "Laptop", "price": 50000, "img": "/static/images/laptop.jpg"},
+    {"id": 2, "name": "Phone", "price": 20000, "img": "/static/images/phone.jpg"},
+    {"id": 3, "name": "Headphones", "price": 2000, "img": "/static/images/headphones.jpg"},
+    {"id": 4, "name": "Smart Watch", "price": 5000, "img": "/static/images/watch.jpg"},
+    {"id": 5, "name": "Camera", "price": 30000, "img": "/static/images/camera.jpg"},
+    {"id": 6, "name": "Shoes", "price": 3000, "img": "/static/images/shoes.jpg"},
+    {"id": 7, "name": "Backpack", "price": 1500, "img": "/static/images/bag.jpg"},
+    {"id": 8, "name": "Keyboard", "price": 2500, "img": "/static/images/keyboard.jpg"},
+    {"id": 9, "name": "Mouse", "price": 800, "img": "/static/images/mouse.jpg"},
+    {"id": 10, "name": "Speaker", "price": 4000, "img": "/static/images/speaker.jpg"}
 ]
 
 cart = []
