@@ -80,6 +80,20 @@ pipeline {
                 }
             }
         }
+        /* ---------------- UPLOAD TO NEXUS ---------------- */
+        stage('Upload to Nexus') {
+            steps {
+                sh """
+                echo "Uploading artifact to Nexus..."
+
+                zip -r app.zip .
+
+                curl -u ${NEXUS_USER}:${NEXUS_PASS} \
+                --upload-file app.zip \
+                ${NEXUS_URL}/repository/${NEXUS_REPO}/app-${IMAGE_TAG}.zip
+                """
+            }
+        }
 
         /* ---------------- RUN CONTAINER ---------------- */
         stage('Run Container') {
