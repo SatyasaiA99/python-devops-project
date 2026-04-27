@@ -7,6 +7,10 @@ pipeline {
         IMAGE_TAG = "v1"
 
         SONARQUBE_ENV = "sq"
+        NEXUS_URL = "http://YOUR_NEXUS_IP:8081"
+        NEXUS_REPO = "python-repo"
+        NEXUS_USER = "admin"
+        NEXUS_PASS = "admin123"
     }
 
     stages {
