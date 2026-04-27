@@ -36,7 +36,7 @@ pipeline {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
                     sh '''
-                    sonar-scanner \
+                    sonar-sonar \
                     -Dsonar.projectKey=python-devops \
                     -Dsonar.sources=. \
                     -Dsonar.host.url=http://YOUR_SONARQUBE_IP:9000 \
