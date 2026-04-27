@@ -2,41 +2,43 @@ pipeline {
     agent any
 
     environment {
+        sq = "SonarQube"   // your SonarQube server name in Jenkins
+
         IMAGE_NAME = "python-devops-app"
+        IMAGE_TAG = "latest"
         CONTAINER_NAME = "python-app"
         PORT = "5000"
 
-        // SonarQube
-        SONARQUBE_SERVER = "SonarQube"   // Jenkins SonarQube config name
-
-        // Nexus
         NEXUS_URL = "http://YOUR_NEXUS_IP:8081"
         NEXUS_REPO = "docker-repo"
-        IMAGE_TAG = "latest"
     }
 
     stages {
 
+        /* ---------------- CHECKOUT ---------------- */
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/SatyasaiA99/python-devops-project.git'
+                git branch: 'main',
+                url: 'https://github.com/SatyasaiA99/python-devops-project.git'
             }
         }
 
+        /* ---------------- SONARQUBE ANALYSIS ---------------- */
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${sq}") {
-                    sh """
+                    sh '''
                     sonar-scanner \
                     -Dsonar.projectKey=python-devops-app \
                     -Dsonar.sources=. \
                     -Dsonar.host.url=http://YOUR_SONARQUBE_IP:9000 \
                     -Dsonar.login=YOUR_SONAR_TOKEN
-                    """
+                    '''
                 }
             }
         }
 
+        /* ---------------- QUALITY GATE ---------------- */
         stage('Quality Gate') {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
@@ -45,12 +47,14 @@ pipeline {
             }
         }
 
+        /* ---------------- DOCKER BUILD ---------------- */
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
+        /* ---------------- STOP OLD CONTAINER ---------------- */
         stage('Stop Old Container') {
             steps {
                 sh "docker stop ${CONTAINER_NAME} || true"
@@ -58,15 +62,19 @@ pipeline {
             }
         }
 
+        /* ---------------- RUN CONTAINER ---------------- */
         stage('Run Container') {
             steps {
                 sh """
-                docker run -d -p ${PORT}:${PORT} --name ${CONTAINER_NAME} ${IMAGE_NAME}:${IMAGE_TAG}
+                docker run -d -p ${PORT}:${PORT} \
+                --name ${CONTAINER_NAME} \
+                ${IMAGE_NAME}:${IMAGE_TAG}
                 """
             }
         }
 
-        stage('Push Image to Nexus') {
+        /* ---------------- PUSH TO NEXUS ---------------- */
+        stage('Push to Nexus') {
             steps {
                 sh """
                 docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${NEXUS_URL}/${NEXUS_REPO}/${IMAGE_NAME}:${IMAGE_TAG}
@@ -76,6 +84,7 @@ pipeline {
             }
         }
 
+        /* ---------------- VERIFY ---------------- */
         stage('Verify') {
             steps {
                 sh """
@@ -83,6 +92,15 @@ pipeline {
                 curl http://localhost:${PORT}
                 """
             }
+        }
+    }
+
+    post {
+        success {
+            echo "🚀 Pipeline Success"
+        }
+        failure {
+            echo "❌ Pipeline Failed"
         }
     }
 }
