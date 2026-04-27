@@ -25,7 +25,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv("${SONARQUBE_SERVER}") {
+                withSonarQubeEnv("${sq}") {
                     sh """
                     sonar-scanner \
                     -Dsonar.projectKey=python-devops-app \
