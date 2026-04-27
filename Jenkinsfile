@@ -5,7 +5,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git 'https://github.com/SatyasaiA99/python-devops-project.git'
+                git branch: 'main', url: 'https://github.com/SatyasaiA99/python-devops-project.git'
             }
         }
 
